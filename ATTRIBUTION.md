@@ -149,3 +149,9 @@ SOFTWARE.
 [Modrinth App]: https://github.com/modrinth/code
 [Gamemode]: https://github.com/FeralInteractive/gamemode
 [Rust Gamemode Internal Linking]: https://github.com/SophieSilver/linking-gamemode
+
+## Home-screen reference artwork
+
+`apps/frontend/src/assets/images/reference-art.jpg` is cropped from the
+launcher screenshot supplied by the user as a visual reference. The underlying
+Minecraft artwork and characters belong to their respective rights holders.

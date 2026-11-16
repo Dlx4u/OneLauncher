@@ -1,6 +1,6 @@
 import type { ParentProps } from 'solid-js';
 import { useLocation, useNavigate } from '@solidjs/router';
-import homeBackdrop from '~assets/images/default_instance_cover.jpg';
+import homeBackdrop from '~assets/images/reference-art.jpg';
 import useSettings from '~ui/hooks/useSettings';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-solid';
 import AnimatedRoutes from '../components/AnimatedRoutes';
@@ -17,7 +17,7 @@ function App(props: ParentProps) {
 	return (
 		<div
 			class="h-full flex flex-col"
-			style={location.pathname === '/' ? { 'background-image': `linear-gradient(90deg, rgba(8,14,26,.91), rgba(8,14,26,.3)), linear-gradient(0deg, rgba(8,14,26,.95), transparent 60%), url(${homeBackdrop})`, 'background-size': 'cover', 'background-position': 'center' } : {}}
+			style={location.pathname === '/' ? { 'background-image': `linear-gradient(90deg, rgba(7,14,29,.78) 0%, rgba(7,14,29,.32) 42%, rgba(7,14,29,.08) 100%), linear-gradient(0deg, rgba(7,14,29,.78), transparent 58%), url(${homeBackdrop})`, 'background-size': 'cover', 'background-position': 'center center' } : {}}
 		>
 			<div class="flex flex-col px-8">
 				<Navbar />

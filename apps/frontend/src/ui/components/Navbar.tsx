@@ -1,4 +1,5 @@
-import { A, useNavigate } from '@solidjs/router';
+import { A, useLocation, useNavigate } from '@solidjs/router';
+import useSettings from '~ui/hooks/useSettings';
 import { Bell01Icon, Settings01Icon } from '@untitled-theme/icons-solid';
 import AuroraLogo from '~assets/logos/aurora-launcher.svg?component-solid';
 import { createSignal } from 'solid-js';
@@ -17,7 +18,7 @@ function NavbarLink(props: NavbarLinkProps) {
 	return (
 		<A
 			activeClass="text-fg-primary"
-			class="rounded-lg px-4 py-2 text-lg hover:bg-component-bg-hover hover:text-fg-primary-hover"
+			class="rounded-lg px-3 py-2 text-sm font-medium hover:bg-component-bg-hover hover:text-fg-primary-hover"
 			end={props.path === '/'}
 			href={props.path}
 			inactiveClass="text-fg-secondary"
@@ -33,24 +34,26 @@ function Navbar() {
 	const controller = useAccountController();
 
 	const navigate = useNavigate();
+	const location = useLocation();
+	const { settings } = useSettings();
 
 	let profileButtonContainer!: HTMLDivElement;
 	let notificationButtonContainer!: HTMLDivElement;
 
 	return (
-		<div class="h-15 min-h-15 flex flex-row items-center *:flex-1">
+		<div class="h-15 min-h-15 flex flex-row items-center *:flex-1" data-tauri-drag-region>
 			<div class="flex items-start justify-start">
 				<div class="flex items-start justify-start">
-					<AuroraLogo width={200} />
+					<AuroraLogo width={180} />
 				</div>
 			</div>
-			<div class="flex flex-row items-center justify-center gap-x-10 py-1">
+			<div class="flex flex-row items-center justify-center gap-x-5 py-1">
 				<NavbarLink label="Home" path="/" />
-				<button class="rounded-lg px-4 py-2 text-lg text-fg-secondary hover:text-fg-primary" onClick={() => { navigate('/'); setTimeout(() => document.getElementById('versions')?.scrollIntoView({ behavior: 'smooth' }), 50); }}>Versions</button>
+				<button class="rounded-lg px-3 py-2 text-sm text-fg-secondary font-medium hover:text-fg-primary" onClick={() => { navigate('/'); setTimeout(() => document.getElementById('versions')?.scrollIntoView({ behavior: 'smooth' }), 50); }}>Versions</button>
 				<NavbarLink label="Browse" path="/browser" />
 				<NavbarLink label="Updates" path="/updates" />
 			</div>
-			<div class="relative flex flex-row items-center justify-end gap-x-2">
+			<div class="relative flex flex-row items-center justify-end gap-x-2" style={location.pathname === '/' && settings().custom_frame ? { 'padding-right': '108px' } : {}}>
 				{/* Notification Manager Button */}
 				<div class="relative" ref={notificationButtonContainer}>
 					<Button

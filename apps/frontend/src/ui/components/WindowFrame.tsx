@@ -1,5 +1,6 @@
 import type { ComponentProps, JSX } from 'solid-js';
 import { Window } from '@tauri-apps/api/window';
+import { useLocation } from '@solidjs/router';
 import { ChevronLeftIcon, Maximize02Icon, MinusIcon, XCloseIcon } from '@untitled-theme/icons-solid';
 import AuroraMark from '~assets/logos/aurora-mark.svg?component-solid';
 import useSettings from '~ui/hooks/useSettings';
@@ -30,6 +31,7 @@ const kill = () => Window.getCurrent().destroy();
 
 function WindowFrame() {
 	const { settings } = useSettings();
+	const location = useLocation();
 
 	const modal = createModal(props => (
 		<Modal.Simple
@@ -53,8 +55,8 @@ function WindowFrame() {
 
 	return (
 		<Show when={settings().custom_frame}>
-			<div class="z-[99999] h-8 w-screen flex flex-row items-center justify-between gap-0.5 bg-page-elevated py-0.5" data-tauri-drag-region>
-				<div class="flex flex-row items-center">
+			<div class={location.pathname === '/' ? 'absolute right-3 top-3 z-[99999] h-8 flex items-center' : 'z-[99999] h-8 w-screen flex flex-row items-center justify-between gap-0.5 bg-page-elevated py-0.5'} data-tauri-drag-region>
+				<div class="flex flex-row items-center" style={location.pathname === '/' ? { display: 'none' } : {}}>
 					<AuroraMark class="ml-2 h-5 w-5" />
 					<TitlebarButton icon={ChevronLeftIcon} onClick={() => history.back()} />
 				</div>
