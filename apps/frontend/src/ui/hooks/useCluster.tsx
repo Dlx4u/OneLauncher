@@ -171,7 +171,7 @@ export function ChooseClusterModal(props: ChooseClusterModalProps) {
 									</For>
 								</Match>
 								<Match when>
-									<Dropdown.Row>No clusters found</Dropdown.Row>
+									<Dropdown.Row>No installed versions found</Dropdown.Row>
 								</Match>
 							</Switch>
 						</Dropdown>
@@ -181,7 +181,7 @@ export function ChooseClusterModal(props: ChooseClusterModalProps) {
 					</Match>
 				</Switch>
 			)}
-			title="Choose a cluster"
+			title="Choose an installed version"
 		/>
 	);
 }

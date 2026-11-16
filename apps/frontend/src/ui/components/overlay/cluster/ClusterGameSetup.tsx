@@ -1,10 +1,8 @@
 import type { CreateCluster, Loader, VersionType } from '@onelauncher/client/bindings';
-import { TextInputIcon } from '@untitled-theme/icons-solid';
 import { bridge } from '~imports';
 import Checkbox from '~ui/components/base/Checkbox';
 import Dropdown from '~ui/components/base/Dropdown';
 import SelectList from '~ui/components/base/SelectList';
-import TextField from '~ui/components/base/TextField';
 import LoaderIcon from '~ui/components/game/LoaderIcon';
 import { formatVersionRelease, LOADERS } from '~utils';
 import { createEffect, createMemo, createResource, createSignal, For, Index, type JSX, onMount, Show, splitProps, untrack } from 'solid-js';
@@ -14,7 +12,7 @@ type PartialCluster = Partial<CreateCluster>;
 type PartialClusterUpdateFunc = <K extends keyof PartialCluster>(key: K, value: PartialCluster[K]) => void;
 
 export default createClusterStep({
-	message: 'Game Setup',
+	message: 'Select a Minecraft version',
 	buttonType: 'create',
 	Component: ClusterGameSetup,
 });
@@ -39,12 +37,11 @@ function ClusterGameSetup(props: ClusterStepProps) {
 		mod_loader: 'vanilla',
 	});
 
-	const requiredProps: (keyof PartialCluster)[] = ['name', 'mc_version', 'mod_loader'];
+	const requiredProps: (keyof PartialCluster)[] = ['mc_version', 'mod_loader'];
 	const [installError, setInstallError] = createSignal('');
 	const [installing, setInstalling] = createSignal(false);
 
 	const updatePartialCluster: PartialClusterUpdateFunc = (key, value) => setPartialCluster(prev => ({ ...prev, [key]: value }));
-	const setName = (name: string) => updatePartialCluster('name', name);
 	const setVersion = (version: string) => updatePartialCluster('mc_version', version);
 	const setLoader = (loader: Loader | string) => updatePartialCluster('mod_loader', loader.toLowerCase() as Loader);
 
@@ -55,11 +52,16 @@ function ClusterGameSetup(props: ClusterStepProps) {
 	});
 
 	createEffect(() => {
-		const hasName = (partialCluster().name?.length ?? 0) > 0;
+		const loader = partialCluster().mod_loader;
+		if (loader && !getLoaders().includes(loader))
+			setLoader('vanilla');
+	});
+
+	createEffect(() => {
 		const hasVersion = (partialCluster().mc_version?.length ?? 0) > 0;
 		const hasLoader = (partialCluster().mod_loader?.length ?? 0) > 0;
 
-		props.setCanGoForward(hasName && hasVersion && hasLoader && !installing());
+		props.setCanGoForward(hasVersion && hasLoader && !installing());
 	});
 
 	onMount(() => {
@@ -83,6 +85,7 @@ function ClusterGameSetup(props: ClusterStepProps) {
 					skip: null,
 					skip_watch: null,
 					...untracked,
+					name: `${untracked.mc_version} ${untracked.mod_loader}`,
 				} as CreateCluster);
 				if (result.status === 'error') {
 					setInstallError(result.error);
@@ -103,20 +106,13 @@ function ClusterGameSetup(props: ClusterStepProps) {
 			<p class="text-left text-fg-secondary">Choose a version and loader. Game files are downloaded during installation; an internet connection is required.</p>
 			<Show when={installing()}><p class="text-left">Installing Minecraft, please wait…</p></Show>
 			<Show when={installError()}><p class="text-left text-danger" role="alert">Installation failed: {installError()}</p></Show>
-			<Option header="Name">
-				<TextField
-					iconLeft={<TextInputIcon />}
-					onInput={e => setName(e.target.value)}
-					placeholder="Name"
-				/>
-			</Option>
 
 			<Option header="Versions">
 				<VersionSelector setVersion={setVersion} />
 			</Option>
 
 			<Option header="Loader">
-				<Dropdown onChange={index => setLoader(getLoaders()[index] || 'vanilla')}>
+				<Dropdown selected={() => Math.max(0, getLoaders().indexOf(partialCluster().mod_loader || 'vanilla'))} onChange={index => setLoader(getLoaders()[index] || 'vanilla')}>
 					<For each={getLoaders()}>
 						{loader => (
 							<Dropdown.Row>
@@ -151,6 +147,7 @@ function VersionSelector(props: { setVersion: (version: string) => void }) {
 	});
 	const [filteredVersions, setFilteredVersions] = createSignal<bridge.Version[]>([]);
 	const [selectedVersion, setSelectedVersion] = createSignal<number[]>([]);
+	let initialSelectionMade = false;
 	const [filters, setFilters] = createSignal<VersionReleaseFilters>({
 		old_alpha: false,
 		old_beta: false,
@@ -193,6 +190,14 @@ function VersionSelector(props: { setVersion: (version: string) => void }) {
 
 	createEffect(() => {
 		refresh(filters(), versions()?.list ?? []);
+		const list = filteredVersions();
+		if (!initialSelectionMade && list.length > 0) {
+			const requested = list.findIndex(version => version.id === '1.21.11');
+			const index = requested >= 0 ? requested : 0;
+			initialSelectionMade = true;
+			setSelectedVersion([index]);
+			props.setVersion(list[index]!.id);
+		}
 	});
 
 

@@ -122,7 +122,7 @@ function BrowserSidebar() {
 		<div class="flex flex-col gap-y-4">
 			<div class="flex flex-col gap-y-4">
 				<div class="flex flex-col gap-y-1">
-					<h6 class="my-1">Active Cluster</h6>
+					<h6 class="my-1">Selected Version</h6>
 					<Button
 						buttonStyle="secondary"
 						children={controller.cluster()?.meta.name || 'None'}

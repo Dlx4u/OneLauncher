@@ -41,9 +41,9 @@ function ClusterOverview() {
 	const deleteModal = createModal(props => (
 		<Modal.Delete
 			{...props}
-			name={cluster() ? `'${cluster()?.meta.name}'` : 'The Cluster'}
+			name={cluster() ? `'${cluster()?.meta.name}'` : 'This version'}
 			onDelete={deleteCluster}
-			title="Confirm Cluster Deletion"
+			title="Confirm Version Deletion"
 		/>
 	));
 
@@ -163,10 +163,10 @@ function ClusterOverview() {
 					description={getPath()}
 					disabled={editMode()}
 					icon={<FolderIcon />}
-					title="Cluster Folder"
+					title="Game Folder"
 				/>
 
-				<SettingsRow.Header>Cluster Actions</SettingsRow.Header>
+				<SettingsRow.Header>Version Actions</SettingsRow.Header>
 				<SettingsRow
 					children={(
 						<Button.Toggle
@@ -183,9 +183,9 @@ function ClusterOverview() {
 							onChecked={toggleEditMode}
 						/>
 					)}
-					description="Edit the cluster name and cover image."
+					description="Edit the version name and cover image."
 					icon={<Edit02Icon />}
-					title="Edit Cluster"
+					title="Edit Version"
 				/>
 				<SettingsRow
 					children={(
@@ -197,10 +197,10 @@ function ClusterOverview() {
 							onClick={() => deleteModal.show()}
 						/>
 					)}
-					description="Delete this cluster and all its data."
+					description="Delete this version and all its data."
 					disabled={editMode()}
 					icon={<Trash01Icon />}
-					title="Delete Cluster"
+					title="Delete Version"
 				/>
 				<SettingsRow
 					children={(
@@ -213,7 +213,7 @@ function ClusterOverview() {
 					)}
 					description="Verifies whether all assets, libraries and natives were properly installed."
 					icon={<Tool02Icon />}
-					title="Verify Cluster"
+					title="Verify Game Files"
 				/>
 			</ScrollableContainer>
 		</Sidebar.Page>

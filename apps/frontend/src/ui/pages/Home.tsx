@@ -42,7 +42,7 @@ function HomePage() {
 				<div class="mt-2 flex items-center gap-3">
 					<Show when={selected()} fallback={<Button buttonStyle="primary" iconLeft={<PlusIcon />} onClick={() => controller.start(true)}>Install Minecraft</Button>}>
 						<Button buttonStyle="primary" iconLeft={<PlayIcon />} onClick={launch}>Launch</Button>
-						<Button buttonStyle="iconSecondary" aria-label="Instance settings" onClick={() => selected() && ClusterRoot.open(navigate, selected()!.uuid)}><Settings01Icon /></Button>
+						<Button buttonStyle="iconSecondary" aria-label="Version settings" onClick={() => selected() && ClusterRoot.open(navigate, selected()!.uuid)}><Settings01Icon /></Button>
 					</Show>
 				</div>
 			</section>
@@ -50,7 +50,6 @@ function HomePage() {
 			<section id="versions" class="flex flex-col gap-3">
 				<div class="flex items-center justify-between">
 					<h2 class="text-lg font-semibold">Installed versions</h2>
-					<button class="text-sm text-white/80 hover:text-white" onClick={() => controller.start(false)}>Import instance</button>
 				</div>
 				<div class="flex gap-4 overflow-x-auto pb-2">
 					<For each={clusters() ?? []}>

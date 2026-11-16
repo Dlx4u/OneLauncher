@@ -222,11 +222,11 @@ export function LauncherSettings(props: {
 
 			<Show when={props.allowParallelClusters !== undefined}>
 				<SettingsRow
-					description="Allow running the same cluster with the same account."
+					description="Allow running the same version more than once."
 					icon={<ActivityIcon />}
 					isGlobal={props.allowParallelClusters!.isGlobal}
 					reset={props.allowParallelClusters!.resetToFallback}
-					title="Allow Parallel Clusters"
+					title="Allow Parallel Games"
 				>
 					<Toggle
 						checked={props.allowParallelClusters!.get}

@@ -181,7 +181,7 @@ export function createClusterStep(props: CreateClusterStepType): () => JSX.Eleme
 					>
 						<Server01Icon class="h-8 w-8 text-fg-primary" />
 						<div class="flex flex-col items-start justify-center">
-							<h1 class="h-10 text-fg-primary -mt-2">New Cluster</h1>
+							<h1 class="h-10 text-fg-primary -mt-2">Install Minecraft</h1>
 							<span class="text-fg-primary">{props.message}</span>
 						</div>
 					</div>
@@ -205,7 +205,7 @@ export function createClusterStep(props: CreateClusterStepType): () => JSX.Eleme
 
 						<Button
 							buttonStyle="primary"
-							children={props.buttonType}
+							children={props.buttonType === 'create' ? 'Install' : 'Next'}
 							class="capitalize"
 							disabled={canGoForward() !== true}
 							iconRight={<ArrowRightIcon />}
