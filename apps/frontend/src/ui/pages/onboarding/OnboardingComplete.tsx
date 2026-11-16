@@ -14,7 +14,7 @@ function OnboardingComplete() {
 				You're all set
 			</h1>
 
-			<h3>OneLauncher is ready to be used.</h3>
+			<h3>Aurora Launcher is ready to be used.</h3>
 		</div>
 	);
 }

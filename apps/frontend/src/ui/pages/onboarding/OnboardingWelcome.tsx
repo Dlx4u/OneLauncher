@@ -4,7 +4,7 @@ function OnboardingWelcome() {
 			<h1 class="text-6xl">
 				Welcome to
 				{' '}
-				<span class="underline underline-8 underline-brand">OneLauncher</span>
+				<span class="underline underline-8 underline-brand">Aurora Launcher</span>
 			</h1>
 
 			<h3>A powerful yet easy to use launcher for Minecraft.</h3>

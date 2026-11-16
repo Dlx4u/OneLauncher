@@ -11,9 +11,9 @@ import {
 import * as TAURI_API_EVENT from '@tauri-apps/api/event';
 
 export const commands = {
-	async authLogin(): Promise<Result<MinecraftCredentials | null, string>> {
+	async authLogin(username: string): Promise<Result<MinecraftCredentials, string>> {
 		try {
-			return { status: 'ok', data: await TAURI_INVOKE('auth_login') };
+			return { status: 'ok', data: await TAURI_INVOKE('auth_login', { username }) };
 		}
 		catch (e) {
 			if (e instanceof Error)

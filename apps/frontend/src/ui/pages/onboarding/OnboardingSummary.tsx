@@ -9,7 +9,7 @@ function OnboardingSummary() {
 	return (
 		<div class="grid grid-cols-2 h-full w-full flex flex-col items-start justify-center gap-x-16 gap-y-2">
 			<h1 class="text-6xl">
-				Prepare OneLauncher
+				Prepare Aurora Launcher
 			</h1>
 
 			<h3>Are you sure you want to proceed with the following tasks?</h3>

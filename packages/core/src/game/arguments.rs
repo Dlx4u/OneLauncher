@@ -207,9 +207,9 @@ fn parse_minecraft_argument(
 		.replace("${auth_xuid}", "0") // TODO: add auth xuid
 		.replace("${auth_uuid}", &uuid.simple().to_string())
 		.replace("${uuid}", &uuid.simple().to_string())
-		.replace("${clientid}", crate::constants::MICROSOFT_CLIENT_ID)
+		.replace("${clientid}", "")
 		.replace("${user_properties}", "{}")
-		.replace("${user_type}", "msa")
+		.replace("${user_type}", "legacy")
 		.replace("${version_name}", version)
 		.replace("${assets_index_name}", asset_index)
 		.replace(

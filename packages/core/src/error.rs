@@ -71,10 +71,6 @@ pub enum ErrorKind {
 	#[error("failed to handle api communication: {0}")]
 	ProxyError(#[from] crate::api::proxy::ProxyError),
 
-	/// Wrapper around [`crate::store::MinecraftAuthError`] to handle Minecraft auth errors.
-	#[error("failed to authenticate with microsoft: {0}")]
-	AuthError(#[from] crate::store::MinecraftAuthError),
-
 	/// Wrapper around [`crate::api::cluster::create::CreateClusterError`] to handle Cluster creation errors.
 	#[error("failed to create clusters: {0}")]
 	CreateClusterError(#[from] crate::api::cluster::create::CreateClusterError),

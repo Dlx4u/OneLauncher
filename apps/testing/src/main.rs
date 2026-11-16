@@ -14,52 +14,9 @@ async fn main() -> onelauncher::Result<()> {
 
 	// modrinth().await?;
 	// launch_and_authenticate().await?;
-	authenticate_mc().await?;
+	// Offline profiles can be created with minecraft::add_offline_user.
 
 	return Ok(());
-}
-
-/// pauline's epic gamer minecraft auth flow
-///
-/// opens a browser tab in which the user sees xbox login and logs in with microsoft and gets redirected
-/// to a new url.
-///
-/// this new url contains the ?code=.... parameter that we need to finish authentication.
-///
-/// in this testing environment we can just copy the final url from our browser and into the testing console
-/// and it will parse the url and find the code and complete the authenticaiton process.
-///
-/// in production/frontend, it works the same way but we get the url and code parameter automatically.
-pub async fn authenticate_mc() -> onelauncher::Result<MinecraftCredentials> {
-	// begins login flow, opens browser
-	println!("a browser will open, follow login flow");
-	let login = minecraft::begin().await?;
-
-	println!("url is {}", login.redirect_uri.as_str());
-	webbrowser::open(login.redirect_uri.as_str())?;
-
-	// after user is done with auth, paste the final code into console below this line
-	println!("enter flow url: ");
-	let mut input = String::new();
-	std::io::stdin()
-		.read_line(&mut input)
-		.expect("unable to read input");
-
-	println!("{}", input.trim());
-
-	// parses the url code query param using the same logic we should use in frontend
-	let parsed = url::Url::parse(input.trim()).expect("idk");
-	let code = if let Some((_, code)) = parsed.query_pairs().find(|x| x.0 == "code") {
-		let code = code.clone();
-		code.to_string()
-	} else {
-		panic!()
-	};
-	let creds = minecraft::finish(code.as_str(), login).await?;
-
-	// mc auth flow is complete and added to state
-	println!("logged in {}", creds.username);
-	Ok(creds)
 }
 
 pub async fn modrinth() -> onelauncher::Result<()> {
@@ -108,7 +65,7 @@ pub async fn launch_and_authenticate() -> onelauncher::Result<()> {
 
 	if minecraft::users().await?.is_empty() {
 		println!("authenticating");
-		authenticate_mc().await?;
+		// Offline profiles can be created with minecraft::add_offline_user.
 	}
 
 	state.settings.write().await.max_async_fetches = 100;

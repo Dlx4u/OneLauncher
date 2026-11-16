@@ -21,15 +21,6 @@ pub const DUMMY_REPLACE_NEWLINE: &str = "\n";
 // =========== Authentication ===========
 /// Our Discord RPC client ID.
 pub const DISCORD_RPC_CLIENT_ID: &str = "1274084193193955408";
-/// Our Microsoft client ID.
-pub const MICROSOFT_CLIENT_ID: &str = "9eac3a4e-8cdd-43ef-863e-49cd601b1f03";
-/// Mojang/Microsoft client ID.
-pub const MINECRAFT_CLIENT_ID: &str = "00000000402b5328";
-/// Mojang/Microsoft login redirect URI.
-pub const MINECRAFT_REDIRECT_URL: &str = "https://login.live.com/oauth20_desktop.srf";
-/// Mojang/Microsoft login xboxlive scopes to get tokens.
-pub const MINECRAFT_SCOPES: &str = "service::user.auth.xboxlive.com::MBI_SSL";
-
 // =========== API ===========
 // !!! URLS must NOT have a trailing slash. !!!
 /// The Modrinth API base url.
@@ -63,7 +54,7 @@ pub const CLUSTER_FILE: &str = "cluster.json";
 /// The public `authentication.json` file used to store the global [`MinecraftAuth`] state.
 ///
 /// [`MinecraftAuth`]: crate::store::MinecraftAuth
-pub const AUTH_FILE: &str = "authentication.json";
+pub const AUTH_FILE: &str = "offline-profiles.json";
 /// The public `processor.json` file used to store the global [`Processor`] state.
 ///
 /// [`Processor`]: crate::store::Processor

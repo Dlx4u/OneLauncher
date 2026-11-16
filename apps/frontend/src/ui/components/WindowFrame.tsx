@@ -37,7 +37,7 @@ function WindowFrame() {
 				<Button buttonStyle="secondary" onClick={() => props.hide()}>No</Button>,
 				<Button buttonStyle="danger" onClick={() => kill()}>Yes</Button>,
 			]}
-			title="Close OneLauncher?"
+			title="Close Aurora Launcher?"
 		/>
 	));
 

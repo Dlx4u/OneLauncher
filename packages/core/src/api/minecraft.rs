@@ -1,23 +1,12 @@
-//! Authentication flow manager
+//! Local profile manager.
 
-use crate::store::{MinecraftCredentials, MinecraftLogin, State};
+use crate::store::{MinecraftCredentials, State};
 
-/// Begin a Microsoft authentication flow.
-#[tracing::instrument]
-pub async fn begin() -> crate::Result<MinecraftLogin> {
+/// Add a local offline profile and select it.
+pub async fn add_offline_user(username: &str) -> crate::Result<MinecraftCredentials> {
 	let state = State::get().await?;
 	let mut users = state.users.write().await;
-
-	users.begin().await
-}
-
-/// Complete a Microsoft authentication flow to recieve [`MinecraftCredentials`].
-#[tracing::instrument]
-pub async fn finish(code: &str, flow: MinecraftLogin) -> crate::Result<MinecraftCredentials> {
-	let state = State::get().await?;
-	let mut users = state.users.write().await;
-
-	users.finish(code, flow).await
+	users.add_offline(username).await
 }
 
 /// Get the current default user if it exists by [`uuid::Uuid`].
@@ -54,10 +43,6 @@ pub async fn remove_user(user: uuid::Uuid) -> crate::Result<()> {
 
 	users.remove(user).await?;
 
-	if users.default_user == Some(user) {
-		set_default_user(Some(user)).await?;
-	}
-
 	Ok(())
 }
 
@@ -71,7 +56,6 @@ pub async fn users() -> crate::Result<Vec<MinecraftCredentials>> {
 }
 
 /// Get a specifc user's [`MinecraftCredentials`] by their [`uuid::Uuid`].
-/// Use [`crate::store::MinecraftState#refresh`] instead.
 #[tracing::instrument]
 pub async fn get_user(user: uuid::Uuid) -> crate::Result<MinecraftCredentials> {
 	let state = State::get().await?;

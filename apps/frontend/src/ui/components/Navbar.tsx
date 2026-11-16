@@ -1,8 +1,6 @@
-import { WEBSITE } from '@onelauncher/client';
 import { A, useNavigate } from '@solidjs/router';
-import { open } from '@tauri-apps/plugin-shell';
 import { Bell01Icon, Cloud01Icon, Settings01Icon, TerminalBrowserIcon } from '@untitled-theme/icons-solid';
-import OneLauncherText from '~assets/logos/onelauncher_text.svg?component-solid';
+import AuroraLogo from '~assets/logos/aurora-launcher.svg?component-solid';
 import { createSignal } from 'solid-js';
 import Button from './base/Button';
 import PlayerHead from './game/PlayerHead';
@@ -42,8 +40,8 @@ function Navbar() {
 	return (
 		<div class="h-15 min-h-15 flex flex-row items-center *:flex-1">
 			<div class="flex items-start justify-start">
-				<div class="flex items-start justify-start transition-transform active:scale-90" onClick={() => open(WEBSITE)}>
-					<OneLauncherText width={260} />
+				<div class="flex items-start justify-start">
+					<AuroraLogo width={200} />
 				</div>
 			</div>
 			<div class="flex flex-row items-center justify-center gap-x-10 py-1">
