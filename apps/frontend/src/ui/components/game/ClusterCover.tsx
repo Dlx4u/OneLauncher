@@ -24,7 +24,7 @@ function ClusterCover(props: ClusterCoverProps) {
 		if (url === undefined || url === null)
 			return split.fallback || defaultCover;
 
-		return convertFileSrc(url);
+		return /^https?:\/\//i.test(url) ? url : convertFileSrc(url);
 	};
 
 	const Wrapper = (props: ParentProps) => (
@@ -46,7 +46,8 @@ function ClusterCover(props: ClusterCoverProps) {
 				{...rest}
 				class={`${split.class || ''}`}
 				onError={(e) => {
-					e.currentTarget.src = split.override ? convertFileSrc(split.override) : defaultCover;
+					e.currentTarget.onerror = null;
+					e.currentTarget.src = split.fallback || defaultCover;
 					if (typeof split.onError === 'function')
 						split.onError(e);
 				}}

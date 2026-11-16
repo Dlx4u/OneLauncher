@@ -97,6 +97,7 @@ function PackageList(props: SearchResultsContainerProps) {
 
 function PackageItem(props: SearchResult & { provider: Providers; row?: boolean }) {
 	const controller = useBrowser();
+	const [imageFailed, setImageFailed] = createSignal(false);
 
 	function redirect() {
 		controller.displayPackage(props.project_id, props.provider);
@@ -129,9 +130,9 @@ function PackageItem(props: SearchResult & { provider: Providers; row?: boolean 
 							}}
 						/>
 					)}
-					when={props.icon_url}
+					when={props.icon_url && !imageFailed()}
 				>
-					<img alt={`Icon for ${props.title}`} class="absolute z-0 max-w-none w-7/6 opacity-50 filter-blur-xl" src={props.icon_url!} />
+					<img alt="" class="absolute z-0 max-w-none w-7/6 opacity-50 filter-blur-xl" src={props.icon_url!} onError={() => setImageFailed(true)} />
 					<img
 						alt={`Icon for ${props.title}`}
 						class="relative z-1 aspect-ratio-square rounded-md image-render-auto"
@@ -140,6 +141,7 @@ function PackageItem(props: SearchResult & { provider: Providers; row?: boolean 
 							'w-3/4': props.row,
 						}}
 						src={props.icon_url!}
+						onError={() => setImageFailed(true)}
 					/>
 				</Show>
 			</div>

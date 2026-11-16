@@ -11,7 +11,7 @@ use crate::State;
 use super::Directories;
 
 /// A structure of manifests and metadata fetching utilities.
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Metadata {
 	/// The [`MinecraftManifest`] associated with core Minecraft versions.
 	pub minecraft: Option<MinecraftManifest>,
@@ -104,9 +104,9 @@ impl Metadata {
 			"minecraft",
 			interpulse::api::minecraft::CURRENT_FORMAT_VERSION,
 		);
-		match fetch_version_manifest(Some(&url), semaphore).await {
+		match fetch_version_manifest(None, semaphore).await {
 			Ok(manifest) => Some(manifest),
-			Err(_) => fetch_version_manifest(None, semaphore).await.ok(),
+			Err(_) => fetch_version_manifest(Some(&url), semaphore).await.ok(),
 		}
 	}
 
@@ -196,10 +196,9 @@ impl Metadata {
 			.await?;
 		}
 
-		metadata.map_or_else(
-			|| Err(anyhow::anyhow!("failed to fetch launcher metadata").into()),
-			Ok,
-		)
+		// Start the UI even on a first launch without network access; individual
+		// version requests will report a useful error and can be retried later.
+		Ok(metadata.unwrap_or_default())
 	}
 
 	/// Update and backup all available metadata.

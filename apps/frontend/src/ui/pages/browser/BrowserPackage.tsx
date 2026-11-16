@@ -136,6 +136,7 @@ BrowserPackage.Routes = BrowserPackageRoutes;
 export default BrowserPackage;
 
 function BrowserSidebar(props: { package: ManagedPackage }) {
+	const [imageFailed, setImageFailed] = createSignal(false);
 	const [authors] = useCommand(() => props.package, () => bridge.commands.getProviderAuthors(props.package.provider, props.package.author));
 	const createdAt = createMemo(() => props.package.created ? new Date(props.package.created) : null);
 	const updatedAt = createMemo(() => props.package.updated ? new Date(props.package.updated) : null);
@@ -145,8 +146,10 @@ function BrowserSidebar(props: { package: ManagedPackage }) {
 		<div class="sticky top-0 z-1 max-w-60 min-w-54 flex flex-col gap-y-4">
 			<div class="min-h-72 flex flex-col overflow-hidden rounded-lg bg-component-bg">
 				<div class="relative h-28 flex items-center justify-center overflow-hidden">
-					<img alt={`Icon for ${props.package.title}`} class="absolute z-0 max-w-none w-7/6 filter-blur-xl" src={props.package.icon_url || ''} />
-					<img alt={`Icon for ${props.package.title}`} class="relative z-1 aspect-ratio-square w-2/5 rounded-md image-render-auto" src={props.package.icon_url || ''} />
+					<Show when={props.package.icon_url && !imageFailed()} fallback={<div class="aspect-ratio-square w-2/5 rounded-md bg-border/05" />}>
+						<img alt="" class="absolute z-0 max-w-none w-7/6 filter-blur-xl" src={props.package.icon_url!} onError={() => setImageFailed(true)} />
+						<img alt={`Icon for ${props.package.title}`} class="relative z-1 aspect-ratio-square w-2/5 rounded-md image-render-auto" src={props.package.icon_url!} onError={() => setImageFailed(true)} />
+					</Show>
 				</div>
 				<div class="flex flex-1 flex-col gap-2 p-3">
 					<div class="flex flex-col gap-2">

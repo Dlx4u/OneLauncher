@@ -193,7 +193,7 @@ pub async fn fetch_from_mirrors(
 #[onelauncher_macros::memory]
 pub async fn check_internet_connection(timeout: u64) -> bool {
 	REQWEST_CLIENT
-		.get("https://api.polyfrost.org/")
+		.get(interpulse::api::minecraft::VERSION_MANIFEST_URL)
 		.timeout(std::time::Duration::from_secs(timeout))
 		.send()
 		.await

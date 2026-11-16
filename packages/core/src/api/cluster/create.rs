@@ -66,8 +66,17 @@ pub async fn create_unfinished_cluster(
 
 		State::sync().await?;
 		let state = State::get().await?;
-		let mut packages = state.packages.write().await;
-		packages.add_cluster(cluster.cluster_path());
+		{
+			let mut packages = state.packages.write().await;
+			packages.add_cluster(cluster.cluster_path());
+		}
+		send_cluster(
+			cluster.uuid,
+			&cluster.cluster_path(),
+			&cluster.meta.name,
+			ClusterPayloadType::Created,
+		)
+		.await?;
 
 		Ok(cluster.cluster_path())
 	}
@@ -105,13 +114,12 @@ pub async fn create_cluster(
 
 	let state = State::get().await?;
 
-	let loader = if mod_loader == Loader::Vanilla {
-		None
-	} else {
-		get_loader_version(mc_version.clone(), mod_loader, loader_version).await?
-	};
-
 	let result = async {
+		let loader = if mod_loader == Loader::Vanilla {
+			None
+		} else {
+			get_loader_version(mc_version.clone(), mod_loader, loader_version).await?
+		};
 		cluster.meta.mc_version = mc_version;
 		cluster.meta.loader = mod_loader;
 		cluster.meta.loader_version = loader.clone();
@@ -140,14 +148,6 @@ pub async fn create_cluster(
 				Some(package_data.package_id.is_some() && package_data.version_id.is_some());
 		}
 
-		send_cluster(
-			cluster.uuid,
-			&cluster.cluster_path(),
-			&cluster.meta.name,
-			ClusterPayloadType::Created,
-		)
-		.await?;
-
 		{
 			state
 				.clusters
@@ -163,8 +163,17 @@ pub async fn create_cluster(
 
 		State::sync().await?;
 		let state = State::get().await?;
-		let mut packages = state.packages.write().await;
-		packages.add_cluster(cluster.cluster_path());
+		{
+			let mut packages = state.packages.write().await;
+			packages.add_cluster(cluster.cluster_path());
+		}
+		send_cluster(
+			cluster.uuid,
+			&cluster.cluster_path(),
+			&cluster.meta.name,
+			ClusterPayloadType::Created,
+		)
+		.await?;
 
 		Ok(cluster.cluster_path())
 	}

@@ -21,7 +21,22 @@ jobs:
       - name: Build Windows executable and installer
         shell: bash
         run: pnpm --filter @onelauncher/desktop exec tauri build --bundles nsis
+      - name: Smoke test launcher startup
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem target/release -File -Filter '*.exe' | Select-Object -First 1
+          if (-not $exe) { throw 'Launcher executable not found' }
+          $process = Start-Process -FilePath $exe.FullName -PassThru
+          try {
+            Start-Sleep -Seconds 45
+            $process.Refresh()
+            if ($process.HasExited) { throw "Launcher exited during startup (exit code $($process.ExitCode))" }
+            Write-Host 'Launcher process remained running for 45 seconds.'
+          } finally {
+            if (-not $process.HasExited) { Stop-Process -Id $process.Id -Force }
+          }
       - name: Upload Windows build
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: aurora-launcher-windows-development

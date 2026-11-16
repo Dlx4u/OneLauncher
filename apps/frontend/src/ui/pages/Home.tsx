@@ -1,248 +1,86 @@
 import type { Cluster } from '@onelauncher/client/bindings';
 import { useNavigate } from '@solidjs/router';
-import {
-	PlayIcon,
-	PlusIcon,
-	SearchMdIcon,
-	Settings01Icon,
-} from '@untitled-theme/icons-solid';
+import { PlayIcon, PlusIcon, Settings01Icon } from '@untitled-theme/icons-solid';
 import { bridge } from '~imports';
+import Button from '~ui/components/base/Button';
 import ClusterCover from '~ui/components/game/ClusterCover';
-import PlayerHead from '~ui/components/game/PlayerHead';
-import LaunchButton from '~ui/components/LaunchButton';
 import { useClusterCreator } from '~ui/components/overlay/cluster/ClusterCreationModal';
-import { useLaunchCluster, useRecentCluster } from '~ui/hooks/useCluster';
-
+import { useLaunchCluster } from '~ui/hooks/useCluster';
 import useCommand from '~ui/hooks/useCommand';
-import useProcessor from '~ui/hooks/useProcessor';
-import { formatAsDuration, upperFirst } from '~utils';
-import { For, onMount, Show } from 'solid-js';
-import BannerBackground from '../../assets/images/header.png';
-import Button from '../components/base/Button';
-import TextField from '../components/base/TextField';
+import { upperFirst } from '~utils';
+import { createMemo, createSignal, For, onCleanup, onMount, Show } from 'solid-js';
 import ClusterRoot from './cluster/ClusterRoot';
 
-type GroupedClusters = Record<string, Cluster[]>;
-
+/** The cards represent real launcher instances, never a hard-coded version catalogue. */
 function HomePage() {
-	const [clusters, { refetch }] = useCommand(bridge.commands.getClustersGrouped);
+	const [clusters, { refetch }] = useCommand(bridge.commands.getClusters);
+	const [selectedId, setSelectedId] = createSignal<string>();
 	const controller = useClusterCreator();
-
-	const containerIds = (list: GroupedClusters | undefined) => Object.keys(list || []);
+	const navigate = useNavigate();
+	const selected = createMemo(() => {
+		const list = clusters() ?? [];
+		return list.find(cluster => cluster.uuid === selectedId()) ?? list[0];
+	});
+	const launch = useLaunchCluster(() => selected()?.uuid);
 
 	onMount(() => {
-		bridge.events.clusterPayload.listen(({ payload }) => {
+		const unlisten = bridge.events.clusterPayload.listen(({ payload }) => {
 			if (payload.event === 'created' || payload.event === 'deleted' || payload.event === 'inserted')
 				refetch();
 		});
+		onCleanup(() => { unlisten.then(fn => fn()); });
 	});
 
-	async function newCluster(installDirectly = false) {
-		try {
-			controller.start(installDirectly);
-		}
-		catch (err) {
-			console.error(err);
-		}
-
-		refetch();
-	}
-
 	return (
-		<div class="h-full flex flex-col gap-y-4 text-fg-primary">
-			<Banner />
-
-			<div class="flex flex-row items-center justify-between">
-				<div>
-					<TextField disabled iconLeft={<SearchMdIcon />} placeholder="Search for clusters..." />
+		<div class="min-h-full flex flex-col justify-between gap-10 pb-8 pt-14 text-white">
+			<section class="max-w-160 flex flex-1 flex-col items-start justify-center gap-3 py-12">
+				<p class="text-xs text-white/70 font-semibold uppercase tracking-[0.2em]">Your Minecraft launcher</p>
+				<Show when={selected()} fallback={<h1 class="text-5xl font-bold">Your next adventure<br />starts here.</h1>}>
+					{cluster => <h1 class="text-5xl font-bold">{cluster().meta.mc_version} {upperFirst(cluster().meta.loader || 'vanilla')}</h1>}
+				</Show>
+				<p class="text-white/75">{selected()?.meta.name || 'Install a Minecraft version to get started.'}</p>
+				<div class="mt-2 flex items-center gap-3">
+					<Show when={selected()} fallback={<Button buttonStyle="primary" iconLeft={<PlusIcon />} onClick={() => controller.start(true)}>Install Minecraft</Button>}>
+						<Button buttonStyle="primary" iconLeft={<PlayIcon />} onClick={launch}>Launch</Button>
+						<Button buttonStyle="iconSecondary" aria-label="Instance settings" onClick={() => selected() && ClusterRoot.open(navigate, selected()!.uuid)}><Settings01Icon /></Button>
+					</Show>
 				</div>
-				<div class="flex flex-row items-center gap-x-2">
-					{/* <Button
-						buttonStyle="icon"
-						children={<RefreshCw01Icon />}
-						onClick={refetch}
+			</section>
 
-					/> */}
-
-					<Button
-						buttonStyle="primary"
-						children="Install Minecraft"
-						iconLeft={<PlusIcon class="stroke-width-[2.2] !w-5" />}
-						onClick={() => newCluster(true)}
-					/>
+			<section id="versions" class="flex flex-col gap-3">
+				<div class="flex items-center justify-between">
+					<h2 class="text-lg font-semibold">Installed versions</h2>
+					<button class="text-sm text-white/80 hover:text-white" onClick={() => controller.start(false)}>Import instance</button>
 				</div>
-			</div>
-
-			<Show
-				children={(
-					<div class="flex flex-col gap-y-8 pb-8">
-						<For each={Object.entries(clusters() ?? {})}>
-							{([group, clusters]) => (
-								<ClusterGroup clusters={clusters} title={group} />
-							)}
-						</For>
-					</div>
-				)}
-				fallback={(
-					<div class="max-h-64 flex flex-1 flex-col items-center justify-center gap-y-4">
-						<span class="text-lg text-fg-secondary font-bold uppercase">No clusters were found.</span>
-						<span class="text-xl font-bold">Choose Install Minecraft to add a version.</span>
-					</div>
-				)}
-				when={containerIds(clusters()).length > 0}
-			/>
+				<div class="flex gap-4 overflow-x-auto pb-2">
+					<For each={clusters() ?? []}>
+						{cluster => <VersionCard cluster={cluster} selected={selected()?.uuid === cluster.uuid} onSelect={() => setSelectedId(cluster.uuid)} />}
+					</For>
+					<button class="min-h-36 min-w-36 flex flex-col items-center justify-center gap-2 border border-white/20 rounded-xl bg-black/30 px-5 text-white hover:bg-white/15" onClick={() => controller.start(true)}>
+						<PlusIcon class="h-7 w-7" />
+						<span class="text-sm font-medium">Install version</span>
+					</button>
+				</div>
+			</section>
 		</div>
+	);
+}
+
+function VersionCard(props: { cluster: Cluster; selected: boolean; onSelect: () => void }) {
+	return (
+		<button
+			class="group relative h-36 min-w-60 overflow-hidden border-2 rounded-xl text-left transition-colors"
+			classList={{ 'border-[#7164ff]': props.selected, 'border-transparent hover:border-white/50': !props.selected }}
+			onClick={props.onSelect}
+		>
+			<ClusterCover class="absolute inset-0 h-full w-full object-cover" cluster={props.cluster} />
+			<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
+			<div class="absolute bottom-3 left-4 right-3 flex flex-col">
+				<strong class="text-lg text-white">{props.cluster.meta.mc_version} {upperFirst(props.cluster.meta.loader || 'vanilla')}</strong>
+				<span class="truncate text-xs text-white/75">{props.cluster.meta.name}</span>
+			</div>
+		</button>
 	);
 }
 
 export default HomePage;
-
-function Banner() {
-	/**
-	 * If there are any clusters, display the most recent cluster name + some statistics as the "description".
-	 * The background would prioritise
-	 * any screenshots taken from the cluster, if there are none, it would display the cluster cover if it has been set.
-	 * The button would launch the cluster.
-	 *
-	 * If there are no clusters, display a generic background with the button action creating a new cluster.
-	 */
-	const cluster = useRecentCluster();
-	const launch = useLaunchCluster(() => cluster()?.uuid);
-	const navigate = useNavigate();
-
-	return (
-		<div class="relative h-52 min-h-52 w-full overflow-hidden rounded-xl">
-			<ClusterCover
-				class="absolute h-52 w-full rounded-xl object-cover"
-				cluster={cluster()}
-				fallback={BannerBackground}
-				linearBlur={{
-					degrees: 270,
-					blur: 30,
-					class: 'after:right-1/3!',
-				}}
-			/>
-
-			<div class="relative z-10 h-full flex flex-col items-start justify-between px-8 py-6">
-				<div class="theme-OneLauncher-Dark flex flex-col gap-y-2 text-fg-primary">
-					<h1>{cluster()?.meta.name || 'Create a cluster'}</h1>
-					<Show when={cluster() !== undefined}>
-						<p>
-							You've played
-							{' '}
-							<strong>
-								{cluster()!.meta.mc_version}
-								{' '}
-								{upperFirst(cluster()!.meta.loader || 'Unknown')}
-							</strong>
-							{' '}
-							for
-							{' '}
-							<strong>{formatAsDuration((cluster()!.meta.overall_played || 0))}</strong>
-							.
-						</p>
-					</Show>
-				</div>
-				<div class="w-full flex flex-row items-end justify-between">
-					<div class="flex flex-row items-center gap-x-4">
-						<Show when={cluster() !== undefined}>
-							<Button
-								buttonStyle="primary"
-								children={`Launch ${cluster()!.meta.mc_version}`}
-								iconLeft={<PlayIcon />}
-								onClick={launch}
-							/>
-							<Button
-								buttonStyle="iconSecondary"
-								children={<Settings01Icon />}
-								class="theme-OneLauncher-Dark bg-op-10!"
-								onClick={() => ClusterRoot.open(navigate, cluster()!.uuid)}
-							/>
-						</Show>
-					</div>
-					<div class="flex flex-row gap-x-2">
-						{/* TODO: These tags */}
-						{/* <Tag iconLeft={<OneConfigLogo />} />
-						<Tag iconLeft={<CheckIcon />}>Verified</Tag> */}
-					</div>
-				</div>
-			</div>
-		</div>
-	);
-}
-
-function ClusterCard(props: Cluster) {
-	const navigate = useNavigate();
-	const { running, isRunning } = useProcessor(props);
-
-	function openClusterPage(_e: MouseEvent) {
-		navigate(`/clusters/?id=${props.uuid}`);
-	}
-
-	return (
-		<>
-			<div
-				class="group relative h-[152px] flex flex-col border rounded-xl"
-				classList={{
-					'border-brand bg-brand/20 active:bg-brand/30 hover:bg-brand/10': isRunning(),
-					'border-border/05 bg-component-bg active:bg-component-bg-pressed hover:bg-component-bg-hover': !isRunning(),
-				}}
-				onClick={e => openClusterPage(e)}
-			>
-				<div class="relative flex-1 overflow-hidden rounded-t-xl">
-					<div
-						class="absolute h-full w-full transition-transform group-hover:!scale-110"
-						style={{ '-webkit-transform': 'translateZ(0)' }}
-					>
-						<ClusterCover
-							class="h-full w-full object-cover"
-							cluster={props}
-						/>
-					</div>
-
-					<Show when={isRunning()}>
-						<div class="absolute left-1 top-1 flex flex-row gap-1 rounded-md bg-brand/70 p-1">
-							<For each={running()}>
-								{process => (
-									<PlayerHead class="h-4 w-4 rounded-[4px]" uuid={process.user} />
-								)}
-							</For>
-						</div>
-					</Show>
-				</div>
-				<div class="z-10 flex flex-row items-center justify-between gap-x-3 p-3">
-					<div class="h-8 flex flex-col gap-1.5 overflow-hidden">
-						<p class="h-4 text-ellipsis whitespace-nowrap font-medium">{props.meta.name}</p>
-						<p class="h-4 text-xs">
-							{upperFirst(props.meta.loader || 'Unknown')}
-							{' '}
-							{props.meta.mc_version}
-							{/* {' '}
-							{props.packages.mods && `• ${props.mods} mods`} */}
-						</p>
-					</div>
-
-					<LaunchButton cluster={props} iconOnly />
-				</div>
-			</div>
-		</>
-	);
-}
-
-interface ClusterGroupProps {
-	title: string;
-	clusters: Cluster[];
-}
-
-function ClusterGroup(props: ClusterGroupProps) {
-	return (
-		<div class="flex flex-col gap-y-4">
-			<h4>{props.title}</h4>
-			<div class="grid grid-cols-4 min-h-38 gap-4 2xl:grid-cols-6">
-				<For each={props.clusters}>
-					{item => <ClusterCard {...item} />}
-				</For>
-			</div>
-		</div>
-	);
-}

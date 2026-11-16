@@ -1,5 +1,5 @@
 import { A, useNavigate } from '@solidjs/router';
-import { Bell01Icon, Cloud01Icon, Settings01Icon, TerminalBrowserIcon } from '@untitled-theme/icons-solid';
+import { Bell01Icon, Settings01Icon } from '@untitled-theme/icons-solid';
 import AuroraLogo from '~assets/logos/aurora-launcher.svg?component-solid';
 import { createSignal } from 'solid-js';
 import Button from './base/Button';
@@ -46,18 +46,11 @@ function Navbar() {
 			</div>
 			<div class="flex flex-row items-center justify-center gap-x-10 py-1">
 				<NavbarLink label="Home" path="/" />
-				<NavbarLink label="Browser" path="/browser" />
+				<button class="rounded-lg px-4 py-2 text-lg text-fg-secondary hover:text-fg-primary" onClick={() => { navigate('/'); setTimeout(() => document.getElementById('versions')?.scrollIntoView({ behavior: 'smooth' }), 50); }}>Versions</button>
+				<NavbarLink label="Browse" path="/browser" />
 				<NavbarLink label="Updates" path="/updates" />
 			</div>
 			<div class="relative flex flex-row items-center justify-end gap-x-2">
-				<Button buttonStyle="icon">
-					<TerminalBrowserIcon />
-				</Button>
-
-				<Button buttonStyle="icon">
-					<Cloud01Icon />
-				</Button>
-
 				{/* Notification Manager Button */}
 				<div class="relative" ref={notificationButtonContainer}>
 					<Button
