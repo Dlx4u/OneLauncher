@@ -1,6 +1,7 @@
 import type { ComponentProps, JSX } from 'solid-js';
 import { Window } from '@tauri-apps/api/window';
 import { ChevronLeftIcon, Maximize02Icon, MinusIcon, XCloseIcon } from '@untitled-theme/icons-solid';
+import AuroraMark from '~assets/logos/aurora-mark.svg?component-solid';
 import useSettings from '~ui/hooks/useSettings';
 import { onMount, Show } from 'solid-js';
 import Button from './base/Button';
@@ -54,6 +55,7 @@ function WindowFrame() {
 		<Show when={settings().custom_frame}>
 			<div class="z-[99999] h-8 w-screen flex flex-row items-center justify-between gap-0.5 bg-page-elevated py-0.5" data-tauri-drag-region>
 				<div class="flex flex-row items-center">
+					<AuroraMark class="ml-2 h-5 w-5" />
 					<TitlebarButton icon={ChevronLeftIcon} onClick={() => history.back()} />
 				</div>
 

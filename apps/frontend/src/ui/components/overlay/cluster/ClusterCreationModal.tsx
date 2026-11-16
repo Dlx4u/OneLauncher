@@ -26,7 +26,7 @@ interface ClusterModalController {
 	finishFunction: Accessor<FinishFn>;
 	setFinishFunction: Setter<FinishFn>;
 
-	start: () => void;
+	start: (installDirectly?: boolean) => void;
 	previous: () => void;
 	cancel: () => void;
 	finish: () => void;
@@ -69,8 +69,11 @@ export function ClusterModalControllerProvider(props: ParentProps) {
 		finishFunction,
 		setFinishFunction,
 
-		start() {
+		start(installDirectly = false) {
+			controller.setStep(undefined);
 			controller.setStep(CreationStage.PROVIDER_SELECTION);
+			if (installDirectly)
+				controller.setStep(CreationStage.GAME_SETUP);
 			modal.show();
 		},
 
@@ -88,8 +91,10 @@ export function ClusterModalControllerProvider(props: ParentProps) {
 
 			if (fn instanceof Promise)
 				fn.then((res) => {
-					if (res === true)
+					if (res === true) {
+						controller.setStep(undefined);
 						modal.hide();
+					}
 				});
 			else
 				if (fn === true)

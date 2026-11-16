@@ -99,12 +99,15 @@ impl Metadata {
 		})
 	}
 
-	async fn fetch_minecraft(semaphore: &FetchSemaphore) -> Option<MinecraftManifest> {
+	pub(crate) async fn fetch_minecraft(semaphore: &FetchSemaphore) -> Option<MinecraftManifest> {
 		let url = Self::get_manifest(
 			"minecraft",
 			interpulse::api::minecraft::CURRENT_FORMAT_VERSION,
 		);
-		fetch_version_manifest(Some(&url), semaphore).await.ok()
+		match fetch_version_manifest(Some(&url), semaphore).await {
+			Ok(manifest) => Some(manifest),
+			Err(_) => fetch_version_manifest(None, semaphore).await.ok(),
+		}
 	}
 
 	async fn fetch_fabric(semaphore: &FetchSemaphore) -> Option<ModdedManifest> {

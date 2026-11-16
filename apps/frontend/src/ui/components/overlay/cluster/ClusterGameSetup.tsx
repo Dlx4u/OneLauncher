@@ -6,9 +6,8 @@ import Dropdown from '~ui/components/base/Dropdown';
 import SelectList from '~ui/components/base/SelectList';
 import TextField from '~ui/components/base/TextField';
 import LoaderIcon from '~ui/components/game/LoaderIcon';
-import useCommand from '~ui/hooks/useCommand';
 import { formatVersionRelease, LOADERS } from '~utils';
-import { createEffect, createMemo, createSignal, For, Index, type JSX, onMount, Show, splitProps, untrack } from 'solid-js';
+import { createEffect, createMemo, createResource, createSignal, For, Index, type JSX, onMount, Show, splitProps, untrack } from 'solid-js';
 import { type ClusterStepProps, createClusterStep } from './ClusterCreationModal';
 
 type PartialCluster = Partial<CreateCluster>;
@@ -41,6 +40,8 @@ function ClusterGameSetup(props: ClusterStepProps) {
 	});
 
 	const requiredProps: (keyof PartialCluster)[] = ['name', 'mc_version', 'mod_loader'];
+	const [installError, setInstallError] = createSignal('');
+	const [installing, setInstalling] = createSignal(false);
 
 	const updatePartialCluster: PartialClusterUpdateFunc = (key, value) => setPartialCluster(prev => ({ ...prev, [key]: value }));
 	const setName = (name: string) => updatePartialCluster('name', name);
@@ -58,7 +59,7 @@ function ClusterGameSetup(props: ClusterStepProps) {
 		const hasVersion = (partialCluster().mc_version?.length ?? 0) > 0;
 		const hasLoader = (partialCluster().mod_loader?.length ?? 0) > 0;
 
-		props.setCanGoForward(hasName && hasVersion && hasLoader);
+		props.setCanGoForward(hasName && hasVersion && hasLoader && !installing());
 	});
 
 	onMount(() => {
@@ -69,22 +70,39 @@ function ClusterGameSetup(props: ClusterStepProps) {
 				if (!untracked[prop])
 					throw new Error(`Missing required property ${prop}`);
 
-			bridge.commands.createCluster({
-				icon: null,
-				icon_url: null,
-				loader_version: null,
-				package_data: null,
-				skip: null,
-				skip_watch: null,
-				...untracked,
-			} as CreateCluster);
-
-			return true;
+			if (installing())
+				return false;
+			setInstalling(true);
+			setInstallError('');
+			try {
+				const result = await bridge.commands.createCluster({
+					icon: null,
+					icon_url: null,
+					loader_version: null,
+					package_data: null,
+					skip: null,
+					skip_watch: null,
+					...untracked,
+				} as CreateCluster);
+				if (result.status === 'error') {
+					setInstallError(result.error);
+					return false;
+				}
+				return true;
+			}
+			catch (error) {
+				setInstallError(String(error));
+				return false;
+			}
+			finally { setInstalling(false); }
 		});
 	});
 
 	return (
 		<div class="flex flex-col gap-y-4">
+			<p class="text-left text-fg-secondary">Choose a version and loader. Game files are downloaded during installation; an internet connection is required.</p>
+			<Show when={installing()}><p class="text-left">Installing Minecraft, please wait…</p></Show>
+			<Show when={installError()}><p class="text-left text-danger" role="alert">Installation failed: {installError()}</p></Show>
 			<Option header="Name">
 				<TextField
 					iconLeft={<TextInputIcon />}
@@ -122,8 +140,17 @@ type VersionReleaseFilters = {
 };
 
 function VersionSelector(props: { setVersion: (version: string) => void }) {
-	const [versions] = useCommand(() => bridge.commands.getMinecraftVersions());
+	const [versions, { refetch }] = createResource(async () => {
+		try {
+			const result = await bridge.commands.getMinecraftVersions();
+			return result.status === 'ok' ? { list: result.data, error: '' } : { list: [], error: result.error };
+		}
+		catch (error) {
+			return { list: [], error: String(error) };
+		}
+	});
 	const [filteredVersions, setFilteredVersions] = createSignal<bridge.Version[]>([]);
+	const [selectedVersion, setSelectedVersion] = createSignal<number[]>([]);
 	const [filters, setFilters] = createSignal<VersionReleaseFilters>({
 		old_alpha: false,
 		old_beta: false,
@@ -143,6 +170,8 @@ function VersionSelector(props: { setVersion: (version: string) => void }) {
 	}
 
 	function toggleFilter(name: string) {
+		setSelectedVersion([]);
+		props.setVersion('');
 		setFilters((prev) => {
 			return {
 				...prev,
@@ -163,20 +192,24 @@ function VersionSelector(props: { setVersion: (version: string) => void }) {
 	}
 
 	createEffect(() => {
-		const list = versions();
-		if (list !== undefined)
-			refresh(filters(), list);
+		refresh(filters(), versions()?.list ?? []);
 	});
 
-	onMount(() => {
-		setFilteredVersions(versions()!);
-	});
 
 	return (
-		<div class="flex flex-1 flex-row gap-2">
+		<div class="flex flex-col gap-2">
+			<Show when={versions.loading}><p class="text-left">Loading Minecraft versions…</p></Show>
+			<Show when={versions()?.error}>
+				<div class="text-left text-danger" role="alert">Unable to load versions: {versions()?.error} <button class="underline" onClick={() => refetch()}>Retry</button></div>
+			</Show>
+			<Show when={!versions.loading && !versions()?.error && filteredVersions().length === 0}>
+				<p class="text-left">No versions available for these filters.</p>
+			</Show>
+			<div class="flex flex-1 flex-row gap-2">
 			<SelectList
 				class="max-h-40 min-w-3/5"
-				onChange={indexes => setVersion(indexes[0])}
+				selected={selectedVersion()}
+				onChange={(indexes) => { setSelectedVersion(indexes); setVersion(indexes[0]); }}
 			>
 				<Show when={filteredVersions() !== undefined}>
 					<Index each={filteredVersions()}>
@@ -198,6 +231,7 @@ function VersionSelector(props: { setVersion: (version: string) => void }) {
 						</Checkbox>
 					)}
 				</For>
+			</div>
 			</div>
 		</div>
 	);

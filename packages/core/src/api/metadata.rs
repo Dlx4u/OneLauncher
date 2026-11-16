@@ -11,14 +11,17 @@ pub use interpulse::api::modded::Manifest;
 #[tracing::instrument]
 pub async fn get_minecraft_versions() -> crate::Result<VersionManifest> {
 	let state = State::get().await?;
-	let meta = state
-		.metadata
-		.read()
-		.await
-		.minecraft
-		.clone()
-		.ok_or_else(|| anyhow::anyhow!("couldn't get minecraft metadata"))?;
-
+	let cached = state.metadata.read().await.minecraft.clone();
+	let meta = match cached {
+		Some(meta) => meta,
+		None => {
+			let meta = crate::store::Metadata::fetch_minecraft(&state.fetch_semaphore)
+				.await
+				.ok_or_else(|| anyhow::anyhow!("Unable to download the Minecraft version list. Check your internet connection and try again."))?;
+			state.metadata.write().await.minecraft = Some(meta.clone());
+			meta
+		}
+	};
 	Ok(meta)
 }
 

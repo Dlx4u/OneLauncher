@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Aurora Launcher">
+  <rect x="2" y="2" width="44" height="44" rx="14" fill="#7965f5"/>
+  <path d="M11 34 24 11l13 23h-8l-5-10-5 10z" fill="#fff"/>
+  <circle cx="35" cy="13" r="3" fill="#b9f6e5"/>
+</svg>

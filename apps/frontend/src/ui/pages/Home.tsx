@@ -37,9 +37,9 @@ function HomePage() {
 		});
 	});
 
-	async function newCluster() {
+	async function newCluster(installDirectly = false) {
 		try {
-			await controller.start();
+			controller.start(installDirectly);
 		}
 		catch (err) {
 			console.error(err);
@@ -66,9 +66,9 @@ function HomePage() {
 
 					<Button
 						buttonStyle="primary"
-						children="New Cluster"
+						children="Install Minecraft"
 						iconLeft={<PlusIcon class="stroke-width-[2.2] !w-5" />}
-						onClick={newCluster}
+						onClick={() => newCluster(true)}
 					/>
 				</div>
 			</div>
@@ -86,7 +86,7 @@ function HomePage() {
 				fallback={(
 					<div class="max-h-64 flex flex-1 flex-col items-center justify-center gap-y-4">
 						<span class="text-lg text-fg-secondary font-bold uppercase">No clusters were found.</span>
-						<span class="text-xl font-bold">Create one now with the New Cluster button.</span>
+						<span class="text-xl font-bold">Choose Install Minecraft to add a version.</span>
 					</div>
 				)}
 				when={containerIds(clusters()).length > 0}
